@@ -1,11 +1,12 @@
 import pickle
 import warnings
 from datetime import datetime, timedelta
+# FIX: Removed 'import pytz' entirely and used Python's native timezone engine
+from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 import requests
 import streamlit as st
-import pytz
 
 # --- SUPPRESS MODEL VERSION WARNINGS ---
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -13,7 +14,8 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 # --- CONFIGURATION & TIMEZONE MANAGEMENT ---
 LAT = 51.0447
 LON = -114.0719
-CALGARY_TZ = pytz.timezone("America/Edmonton")
+# FIX: Switched from pytz to native standard ZoneInfo
+CALGARY_TZ = ZoneInfo("America/Edmonton")
 
 FEATURE_NAMES = [
     "Calgary_Fire_Hall_Headquarters_temperature_2m",
@@ -138,8 +140,7 @@ tomorrow_dt = (datetime.now(CALGARY_TZ).date() + timedelta(days=1))
 df_daily_15 = df_daily_agg[(df_daily_agg["date"] >= tomorrow_dt) & (df_daily_agg["date"] < tomorrow_dt + timedelta(days=15))]
 available_days = sorted(df_daily_15["date"].unique()) if not df_daily_15.empty else [now_hour.date()]
 
-# CRITICAL FIX: Session state is initialized immediately here at the top level 
-# before any layout rendering block runs, ensuring it never hits an AttributeError.
+# State tracking initialization guard
 if "selected_drilldown_date" not in st.session_state:
     st.session_state["selected_drilldown_date"] = available_days[0]
 
@@ -208,7 +209,6 @@ if not df_daily_15.empty:
             card_label = day.strftime("%b %d")
             
             with cols[i]:
-                # Safeguard checking execution using robust dictionary syntax
                 if st.session_state["selected_drilldown_date"] == day:
                     st.markdown(f"🎯 **{card_label}**")
                     st.markdown(f"`{day_total_kwh:.1f} kWh`")
