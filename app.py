@@ -1,12 +1,11 @@
 import pickle
 import warnings
 from datetime import datetime, timedelta
-# FIX: Removed 'import pytz' entirely and used Python's native timezone engine
-from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 import requests
 import streamlit as st
+import pytz
 
 # --- SUPPRESS MODEL VERSION WARNINGS ---
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
@@ -14,8 +13,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 # --- CONFIGURATION & TIMEZONE MANAGEMENT ---
 LAT = 51.0447
 LON = -114.0719
-# FIX: Switched from pytz to native standard ZoneInfo
-CALGARY_TZ = ZoneInfo("America/Edmonton")
+CALGARY_TZ = pytz.timezone("America/Edmonton")
 
 FEATURE_NAMES = [
     "Calgary_Fire_Hall_Headquarters_temperature_2m",
@@ -140,7 +138,8 @@ tomorrow_dt = (datetime.now(CALGARY_TZ).date() + timedelta(days=1))
 df_daily_15 = df_daily_agg[(df_daily_agg["date"] >= tomorrow_dt) & (df_daily_agg["date"] < tomorrow_dt + timedelta(days=15))]
 available_days = sorted(df_daily_15["date"].unique()) if not df_daily_15.empty else [now_hour.date()]
 
-# State tracking initialization guard
+# FIX: Session state is now safely initialized with the FIRST singular date element 
+# instead of an entire array chunk. This stops the continuous refresh layout crash.
 if "selected_drilldown_date" not in st.session_state:
     st.session_state["selected_drilldown_date"] = available_days[0]
 
