@@ -1,0 +1,32 @@
+name: Daily Weather Cache Refresher
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Runs automatically every morning at 6:00 AM UTC
+  workflow_dispatch: # Allows you to trigger it manually from GitHub by clicking a button
+
+jobs:
+  refresh-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' # ✅ FIXED: Changed 'python-numeric' to 'python-version'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Run Fetcher Script
+        run: python fetch_data.py
+
+      - name: Commit and Push Updated Cache
+        run: |
+          git config --global user.name "GitHub Action Cache"
+          git config --global user.email "action@github.com"
+          git add cached_weather.json
+          git commit -m "🔄 Automated Weather Ingestion Update [Skip CI]" || exit 0
+          git push
