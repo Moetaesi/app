@@ -83,6 +83,7 @@ def fetch_weather_forecast():
 
     try:
         response = requests.get(url, params=params)
+        print(response)
         if response.status_code != 200 or not response.text.strip():
             return None, True
 
