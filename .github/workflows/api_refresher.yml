@@ -3,7 +3,7 @@ name: Daily Weather Cache Refresher
 on:
   schedule:
     - cron: '0 6 * * *' # Runs automatically every morning at 6:00 AM UTC
-  workflow_dispatch: # Allows you to trigger it manually from GitHub clicking a button
+  workflow_dispatch: # Allows you to trigger it manually from GitHub by clicking a button
 
 jobs:
   refresh-cache:
@@ -15,7 +15,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-numeric: '3.12'
+          python-version: '3.12' # ✅ FIXED: Changed 'python-numeric' to 'python-version'
 
       - name: Install Dependencies
         run: pip install requests
