@@ -1,0 +1,32 @@
+name: Daily Weather Cache Refresher
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Runs automatically every morning at 6:00 AM UTC
+  workflow_dispatch: # Allows manual button clicks
+
+jobs:
+  refresh-cache:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Explicitly grants the token authorization to update files
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Run Fetcher Script
+        run: python fetch_data.py
+
+      - name: Commit and Push Updated Cache
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🔄 Automated Weather Ingestion Update [Skip CI]"
+          file_pattern: 'cached_weather.json'
